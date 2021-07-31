@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">PFE</string>
+    <string name="login">Login</string>
+    <string name="signup"><u>S\'inscrire</u></string>
+    <string name="loginhere"><u>Connectez-vous ici</u></string>
+    <string name="already">Déjà</string>
+    <string name="report_your_problems">Signalez vos problèmes</string>
+
+    <string name="fname">Prénom</string>
+    <string name="lname">Nom</string>
+    <string name="phone">téléphone</string>
+    <string name="email">Email</string>
+    <string name="password">Mot de passe</string>
+    <string name="passwordr">Confirmez le mot de passe</string>
+    <string name="wilaya">Wilaya</string>
+    <string name="daira">Daira</string>
+    <string name="commune">Commune</string>
+    <string name="detailinfo">informations en détaillées</string>
+    <string name="senderid">sender Id</string>
+    <string name="gpslocation">gpsLocalisation</string>
+    <string name="picurl">picUrl</string>
+    <string name="insert_data">insérer des données</string>
+    <string name="todo">TODO</string>
+    <string name="send">Envoyer le rapport</string>
+    <string name="dommages_des_fuites_d_eau">dommages des fuites d eau</string>
+    <string name="fuites_de_gaz">Fuites de Gaz</string>
+    <string name="manque_d_clairage">Manque d éclairage</string>
+    <string name="routes_non_pav_es">Routes non pavées</string>
+    <string name="d_tritus_en_place">Les déchets sont en place</string>
+    <string name="manque_de_poubelle">L insuffisance des packs poubelle</string>
+    <string name="location" >get my location</string>
+    <string name="myname" >"\u0020""\u0020" "\u0020" "\u0020""\u0020" "\u0020" This App has been Developed by "\u261B" Houari ilies\n  "\u0020""\u0020" "\u0020" "\u0020""\u0020" "\u0020"  For more information here\'s my contact info   "\u261D" </string>
+    <string name="incident" >couldn\'t get your gps location ,So Please say the incident place in the detail</string>
+    <string name="emptyFields" >Please fill all empty Fields</string>
+    <string name="emptyField" >Please fill this Field</string>
+    <string name="PasswordIncorrect" >Password Incorrect</string>
+    <string name="addPic" >Please Add a picture of the incident</string>
+    <string name="detailInfoEmptyFields" >Please add some information about the incident report</string>
+    <string name="progress_detail">Please wait ...</string>
+
+
+</resources>
