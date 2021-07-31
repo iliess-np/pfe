@@ -67,7 +67,7 @@ public class Login extends AppCompatActivity {
                             String result = putData.getResult();
                             Log.e("login",result);
                             if (!result.equals("phone/email or Password wrong")){
-                                Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+                                Intent intent=new Intent(getApplicationContext(),MapsActivity.class);
                                 intent.putExtra("id", result);
                                 startActivity(intent);
                                 finish();

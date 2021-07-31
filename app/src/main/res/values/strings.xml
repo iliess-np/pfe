@@ -28,15 +28,16 @@
     <string name="routes_non_pav_es">Routes non pavées</string>
     <string name="d_tritus_en_place">Les déchets sont en place</string>
     <string name="manque_de_poubelle">L insuffisance des packs poubelle</string>
-    <string name="location" >get my location</string>
-    <string name="myname" >"\u0020""\u0020" "\u0020" "\u0020""\u0020" "\u0020" This App has been Developed by "\u261B" Houari ilies\n  "\u0020""\u0020" "\u0020" "\u0020""\u0020" "\u0020"  For more information here\'s my contact info   "\u261D" </string>
-    <string name="incident" >couldn\'t get your gps location ,So Please say the incident place in the detail</string>
-    <string name="emptyFields" >Please fill all empty Fields</string>
-    <string name="emptyField" >Please fill this Field</string>
-    <string name="PasswordIncorrect" >Password Incorrect</string>
-    <string name="addPic" >Please Add a picture of the incident</string>
-    <string name="detailInfoEmptyFields" >Please add some information about the incident report</string>
+    <string name="location">get my location</string>
+    <string name="myname">"\u0020""\u0020" "\u0020" "\u0020""\u0020" "\u0020" This App has been Developed by "\u261B" Houari ilies\n  "\u0020""\u0020" "\u0020" "\u0020""\u0020" "\u0020"  For more information here\'s my contact info   "\u261D" </string>
+    <string name="incident">couldn\'t get your gps location ,So Please say the incident place in the detail</string>
+    <string name="emptyFields">Please fill all empty Fields</string>
+    <string name="emptyField">Please fill this Field</string>
+    <string name="PasswordIncorrect">Password Incorrect</string>
+    <string name="addPic">Please Add a picture of the incident</string>
+    <string name="detailInfoEmptyFields">Please add some information about the incident report</string>
     <string name="progress_detail">Please wait ...</string>
+    <string name="title_activity_maps">Map</string>
 
 
 </resources>

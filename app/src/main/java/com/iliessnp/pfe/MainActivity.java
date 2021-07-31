@@ -4,16 +4,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -76,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     FusedLocationProviderClient fusedLocationProviderClient;
     //Fetch data
     EditText editTextsenderid;
-    Button buttonfetch;
+    Button buttonfetch,btnShowMap;
     ListView listview;
 
     ProgressDialog mProgressDialog;
@@ -90,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
     Button btnGen;
     ImageView ivOutput;
 
+    LocationManager locationManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
         btnGen = findViewById(R.id.btn_generate);
         ivOutput = findViewById(R.id.iv_output);
+
+        btnShowMap = findViewById(R.id.showmap);
 
         tv_lat = findViewById(R.id.tv_lat);
         tv_lon = findViewById(R.id.tv_lon);
@@ -119,6 +127,13 @@ public class MainActivity extends AppCompatActivity {
         locationRequest.setFastestInterval(1000 * FAST_UPDATE_INTERVAL);
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
+        locationManager=(LocationManager) getSystemService(LOCATION_SERVICE);
+        //Check gps is enable or not
+        assert locationManager != null;
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
+            OnGPS();// Fun enable gps
+        }
         //this  will, be called wen interval is met
         locationCallback = new LocationCallback(){
 
@@ -126,9 +141,11 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location location = locationResult.getLastLocation();
+
                 updateUIValues(location);
             }
         };
+
         sw_gps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -142,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         sw_locationsUpdates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -210,6 +228,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+    }
+
+    public void showMap(View view){
+        startActivity(new Intent(this, MapsActivity.class));
     }
 
     //Fetch data
@@ -335,7 +358,11 @@ public class MainActivity extends AppCompatActivity {
             fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
+                    if (location!=null){
                     updateUIValues(location);
+                    }else {
+                        startLocationsUpdates();
+                    }
                 }
             });
         }else{
@@ -348,35 +375,45 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateUIValues(Location location) {
-        tv_lat.setText(String.valueOf(location.getLatitude()));
-        tv_lon.setText(String.valueOf(location.getLongitude()));
-        tv_accuracy.setText(String.valueOf(location.getAccuracy()));
 
-        if (location.hasAltitude()){
-            tv_altitude.setText(String.valueOf(location.getAltitude()));
-        }else{
-            tv_altitude.setText("Not Available");
-        }
+                tv_lat.setText(String.valueOf(location.getLatitude()));
+                tv_lon.setText(String.valueOf(location.getLongitude()));
+                tv_accuracy.setText(String.valueOf(location.getAccuracy()));
 
-        if (location.hasSpeed()){
-            tv_speed.setText(String.valueOf(location.getSpeed()));
-        }else{
-            tv_speed.setText("Not Available");
-        }
+                if (location.hasAltitude()){
+                    tv_altitude.setText(String.valueOf(location.getAltitude()));
+                }else{
+                    tv_altitude.setText("Not Available");
+                }
 
-        Geocoder geocoder = new Geocoder(MainActivity.this);
+                if (location.hasSpeed()){
+                    tv_speed.setText(String.valueOf(location.getSpeed()));
+                }else{
+                    tv_speed.setText("Not Available");
+                }
 
-        try {
-            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(),1);
-            tv_address.setText(addresses.get(0).getAddressLine(0));
-        }catch (Exception e){
-            tv_address.setText("Unable to get street Address");
-        }
+                Geocoder geocoder = new Geocoder(MainActivity.this);
 
-        lat = location.getLatitude();
-        lon = location.getLongitude();
-        accuracy = String.valueOf(location.getAccuracy());
-        myLocation=lat+","+lon;
+                try {
+                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(),1);
+                    tv_address.setText(addresses.get(0).getAddressLine(0));
+                }catch (Exception e){
+                    tv_address.setText("Unable to get street Address");
+                }
+
+                lat = location.getLatitude();
+                lon = location.getLongitude();
+                accuracy = String.valueOf(location.getAccuracy());
+                myLocation=lat+","+lon;
+
+    }
+
+    //dialog to enable gps
+    private void OnGPS() {
+        final android.app.AlertDialog.Builder builder= new android.app.AlertDialog.Builder(this);
+        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("YES", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("NO", (dialog, which) -> dialog.cancel());
+        final AlertDialog alertDialog=builder.create();
+        alertDialog.show();
     }
 
     //***********************************************************
