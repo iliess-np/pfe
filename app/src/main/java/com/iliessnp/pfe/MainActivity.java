@@ -74,8 +74,6 @@ public class MainActivity extends AppCompatActivity {
     LocationRequest locationRequest;
     LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
-
-
     //Fetch data
     EditText editTextsenderid;
     Button buttonfetch;
