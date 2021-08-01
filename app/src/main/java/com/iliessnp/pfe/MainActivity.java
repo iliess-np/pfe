@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tv_lat, tv_lon, tv_altitude, tv_accuracy, tv_speed, tv_sensor, tv_updates, tv_address;
     Switch sw_locationsUpdates, sw_gps;
     boolean updatesOn = false;
-    String senderId, myLocation, accuracy;
+    String senderId, myLocation, accuracy,alert;
     double lon, lat;
     LocationRequest locationRequest;
     LocationCallback locationCallback;
@@ -90,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
     String phone  ;
 
     //QR code
-    EditText etInput;
     Button btnGen;
     ImageView ivOutput;
 
@@ -127,25 +126,25 @@ public class MainActivity extends AppCompatActivity {
         locationRequest.setFastestInterval(1000 * FAST_UPDATE_INTERVAL);
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
-        locationManager=(LocationManager) getSystemService(LOCATION_SERVICE);
         //Check gps is enable or not
+        locationManager=(LocationManager) getSystemService(LOCATION_SERVICE);
         assert locationManager != null;
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
         {
             OnGPS();// Fun enable gps
         }
+
         //this  will, be called wen interval is met
         locationCallback = new LocationCallback(){
-
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location location = locationResult.getLastLocation();
-
                 updateUIValues(location);
             }
         };
 
+        //Switch gps Accuracy
         sw_gps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -160,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Switch btw showing gps data On/Off
         sw_locationsUpdates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -172,25 +172,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         updateGPS();
-        btnGen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String sText = etInput.getText().toString().trim();
-                MultiFormatWriter writer = new MultiFormatWriter();
-                try {
-                    BitMatrix matrix =writer.encode(sText, BarcodeFormat.QR_CODE, 350 , 350);
-                    BarcodeEncoder encoder = new BarcodeEncoder();
-                    Bitmap bitmap = encoder.createBitmap(matrix);
-                    ivOutput.setImageBitmap(bitmap);
-                    InputMethodManager manager = (InputMethodManager) getSystemService(
-                            Context.INPUT_METHOD_SERVICE
-                    );
-                    manager.hideSoftInputFromWindow(etInput.getApplicationWindowToken(),0);
-                } catch (WriterException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+
+
 
         //Fetch data
         buttonfetch = (Button)findViewById(R.id.btnfetch);
@@ -209,12 +192,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //QR code
+        //generate QR code
         btnGen = findViewById(R.id.btn_generate);
         ivOutput = findViewById(R.id.iv_output);
 
         btnGen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                GetMatchData();
+                try {
+                    sendAlertQR();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 String sText = f_name + "\n" + l_name + "\n" + phone ;
 
                 MultiFormatWriter writer = new MultiFormatWriter();
@@ -230,6 +220,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+
 
     public void showMap(View view){
         startActivity(new Intent(this, MapsActivity.class));
@@ -348,10 +340,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //get permission
+    //get current location
+    //update UI
     private void updateGPS(){
-        //get permission
-        //get current location
-        //update UI
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
 
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
@@ -374,6 +366,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //update UI Values
     private void updateUIValues(Location location) {
 
                 tv_lat.setText(String.valueOf(location.getLatitude()));
@@ -416,6 +409,16 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+    //send Alert someone scanned QR code
+    private void sendAlertQR() throws UnsupportedEncodingException {
+        String url;
+        alert = "QR code scanned";
+        url = "https://helptech29.000webhostapp.com/sendAlert.php?" +
+                "sender_id=" + senderId +
+                "&alert=" + alert.trim() +
+                "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
+        new MyAsyncTaskgetNews().execute(url);
+    }
     //***********************************************************
     public void send(View view) throws UnsupportedEncodingException {
         String url;
