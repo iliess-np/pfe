@@ -3,6 +3,7 @@ package com.iliessnp.pfe;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -25,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -36,7 +38,9 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
+
 import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -52,6 +56,7 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -59,13 +64,39 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+//accelerometer
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     public static final int DEFAULT_UPDATE_INTERVALE = 3;
     public static final int FAST_UPDATE_INTERVAL = 5;
@@ -73,27 +104,40 @@ public class MainActivity extends AppCompatActivity {
     TextView tv_lat, tv_lon, tv_altitude, tv_accuracy, tv_speed, tv_sensor, tv_updates, tv_address;
     Switch sw_locationsUpdates, sw_gps;
     boolean updatesOn = false;
-    String senderId, myLocation, accuracy,alert;
+    String senderId, myLocation, accuracy, alert;
     double lon, lat;
     LocationRequest locationRequest;
     LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
     //Fetch data
     EditText editTextsenderid;
-    Button buttonfetch,btnShowMap;
+    Button buttonfetch, btnShowMap;
     ListView listview;
 
     ProgressDialog mProgressDialog;
     public static final String KEY_SENDERID = "sender_id";
-    String f_name  ;
-    String l_name  ;
-    String phone  ;
+    String f_name;
+    String l_name;
+    String phone;
 
     //QR code
     Button btnGen;
     ImageView ivOutput;
 
     LocationManager locationManager;
+
+    //accelerometer
+    private static final String TAG = "MainActivity";
+    SensorManager sensorManager;
+    Sensor accelerometer;
+    TextView x, y, z, sum, jump, fall;
+    float xx, yy, zz, summ;
+    int falll, jumpp;
+    ArrayList<Float> xData = new ArrayList<>();
+    ArrayList<Float> yData = new ArrayList<>();
+    ArrayList<Float> zData = new ArrayList<>();
+    ArrayList<Float> acceleration = new ArrayList<>();
+    long timeNow, timePrv = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,12 +148,12 @@ public class MainActivity extends AppCompatActivity {
         if (intent.getExtras() != null) {
             senderId = intent.getExtras().getString("id");
         }
-
+        //QR code
         btnGen = findViewById(R.id.btn_generate);
         ivOutput = findViewById(R.id.iv_output);
-
+        //Map
         btnShowMap = findViewById(R.id.showmap);
-
+        //GPS
         tv_lat = findViewById(R.id.tv_lat);
         tv_lon = findViewById(R.id.tv_lon);
         tv_altitude = findViewById(R.id.tv_altitude);
@@ -127,15 +171,14 @@ public class MainActivity extends AppCompatActivity {
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
         //Check gps is enable or not
-        locationManager=(LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         assert locationManager != null;
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-        {
-            OnGPS();// Fun enable gps
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            OnGPS();
         }
 
         //this  will, be called wen interval is met
-        locationCallback = new LocationCallback(){
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
@@ -173,26 +216,23 @@ public class MainActivity extends AppCompatActivity {
 
         updateGPS();
 
-
-
         //Fetch data
-        buttonfetch = (Button)findViewById(R.id.btnfetch);
-        listview = (ListView)findViewById(R.id.listView);
+        buttonfetch = (Button) findViewById(R.id.btnfetch);
+        listview = (ListView) findViewById(R.id.listView);
 
         buttonfetch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (senderId.equals("")){
+                if (senderId.equals("")) {
                     Toast.makeText(MainActivity.this, "Please Enter Detail", Toast.LENGTH_SHORT).show();
-                }else {
+                } else {
                     GetMatchData();
                 }
             }
         });
 
         //QR code
-        //generate QR code
         btnGen = findViewById(R.id.btn_generate);
         ivOutput = findViewById(R.id.iv_output);
 
@@ -205,11 +245,11 @@ public class MainActivity extends AppCompatActivity {
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                String sText = f_name + "\n" + l_name + "\n" + phone ;
+                String sText = f_name + "\n" + l_name + "\n" + phone;
 
                 MultiFormatWriter writer = new MultiFormatWriter();
                 try {
-                    BitMatrix matrix =writer.encode(sText, BarcodeFormat.QR_CODE, 350 , 350);
+                    BitMatrix matrix = writer.encode(sText, BarcodeFormat.QR_CODE, 350, 350);
                     BarcodeEncoder encoder = new BarcodeEncoder();
                     Bitmap bitmap = encoder.createBitmap(matrix);
                     ivOutput.setImageBitmap(bitmap);
@@ -219,11 +259,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //accelerometer
+        x = findViewById(R.id.x);
+        y = findViewById(R.id.y);
+        z = findViewById(R.id.z);
+        sum = findViewById(R.id.sum);
+        jump = findViewById(R.id.jump);
+        fall = findViewById(R.id.fall);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        assert sensorManager != null;
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener((SensorEventListener) MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        falll = Integer.parseInt(fall.getText().toString());
+        jumpp = Integer.parseInt(jump.getText().toString());
+
+
     }
 
 
-
-    public void showMap(View view){
+    public void showMap(View view) {
         startActivity(new Intent(this, MapsActivity.class));
     }
 
@@ -256,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, ""+error, Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "" + error, Toast.LENGTH_LONG).show();
                     }
                 }) {
             @Override
@@ -284,9 +338,9 @@ public class MainActivity extends AppCompatActivity {
                 phone = jo.getString(Config5.KEY_PHONE);
 
                 final HashMap<String, String> employees = new HashMap<>();
-                employees.put(Config5.KEY_FNAME, "f_name = " +f_name);
-                employees.put(Config5.KEY_LNAME, "l_name = " +l_name);
-                employees.put(Config5.KEY_PHONE, "phone = " +phone);
+                employees.put(Config5.KEY_FNAME, "f_name = " + f_name);
+                employees.put(Config5.KEY_LNAME, "l_name = " + l_name);
+                employees.put(Config5.KEY_PHONE, "phone = " + phone);
 
                 list.add(employees);
             }
@@ -301,23 +355,22 @@ public class MainActivity extends AppCompatActivity {
         listview.setAdapter(adapter);
     }
 
-    //tracking
+    //GPS tracking
     private void stopLocationsUpdates() {
-        tv_updates.setText("location is not tracked");
-        tv_lat.setText("Not tracking location");
-        tv_lon.setText("Not tracking location");
-        tv_speed.setText("Not tracking location");
-        tv_address.setText("Not tracking location");
-        tv_accuracy.setText("Not tracking location");
-        tv_altitude.setText("Not tracking location");
-        tv_sensor.setText("Not tracking location");
+        tv_updates.setText(R.string.not_tracking_location);
+        tv_lat.setText(R.string.not_tracking_location);
+        tv_lon.setText(R.string.not_tracking_location);
+        tv_speed.setText(R.string.not_tracking_location);
+        tv_address.setText(R.string.not_tracking_location);
+        tv_accuracy.setText(R.string.not_tracking_location);
+        tv_altitude.setText(R.string.not_tracking_location);
+        tv_sensor.setText(R.string.not_tracking_location);
 
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-
     }
 
     private void startLocationsUpdates() {
-        tv_updates.setText("location is tracked");
+        tv_updates.setText(R.string.location_tracked);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -329,83 +382,81 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        switch (requestCode){
-            case PERMISSIONS_FINE_LOCATION:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    updateGPS();
-                }else{
-                    Toast.makeText(this, "pleas grant Permission to the APP so it can function", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
+        if (requestCode == PERMISSIONS_FINE_LOCATION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                updateGPS();
+            } else {
+                Toast.makeText(this, "pleas grant Permission to the APP so it can function", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
     }
 
     //get permission
     //get current location
     //update UI
-    private void updateGPS(){
+    private void updateGPS() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
 
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
                 @Override
                 public void onSuccess(Location location) {
-                    if (location!=null){
-                    updateUIValues(location);
-                    }else {
+                    if (location != null) {
+                        updateUIValues(location);
+                    } else {
                         startLocationsUpdates();
                     }
                 }
             });
-        }else{
+        } else {
             //get permission
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION} , PERMISSIONS_FINE_LOCATION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_FINE_LOCATION);
             }
         }
-
     }
 
     //update UI Values
     private void updateUIValues(Location location) {
 
-                tv_lat.setText(String.valueOf(location.getLatitude()));
-                tv_lon.setText(String.valueOf(location.getLongitude()));
-                tv_accuracy.setText(String.valueOf(location.getAccuracy()));
+        tv_lat.setText(String.valueOf(location.getLatitude()));
+        tv_lon.setText(String.valueOf(location.getLongitude()));
+        tv_accuracy.setText(String.valueOf(location.getAccuracy()));
 
-                if (location.hasAltitude()){
-                    tv_altitude.setText(String.valueOf(location.getAltitude()));
-                }else{
-                    tv_altitude.setText("Not Available");
-                }
+        if (location.hasAltitude()) {
+            tv_altitude.setText(String.valueOf(location.getAltitude()));
+        } else {
+            tv_altitude.setText(R.string.not_Available);
+        }
 
-                if (location.hasSpeed()){
-                    tv_speed.setText(String.valueOf(location.getSpeed()));
-                }else{
-                    tv_speed.setText("Not Available");
-                }
+        if (location.hasSpeed()) {
+            tv_speed.setText(String.valueOf(location.getSpeed()));
+        } else {
+            tv_speed.setText(R.string.not_Available);
+        }
 
-                Geocoder geocoder = new Geocoder(MainActivity.this);
+        Geocoder geocoder = new Geocoder(MainActivity.this);
 
-                try {
-                    List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(),1);
-                    tv_address.setText(addresses.get(0).getAddressLine(0));
-                }catch (Exception e){
-                    tv_address.setText("Unable to get street Address");
-                }
+        try {
+            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            tv_address.setText(addresses.get(0).getAddressLine(0));
+        } catch (Exception e) {
+            tv_address.setText(R.string.addresses);
+        }
 
-                lat = location.getLatitude();
-                lon = location.getLongitude();
-                accuracy = String.valueOf(location.getAccuracy());
-                myLocation=lat+","+lon;
+        lat = location.getLatitude();
+        lon = location.getLongitude();
+        accuracy = String.valueOf(location.getAccuracy());
+        myLocation = lat + "," + lon;
 
     }
 
     //dialog to enable gps
     private void OnGPS() {
-        final android.app.AlertDialog.Builder builder= new android.app.AlertDialog.Builder(this);
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("YES", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("NO", (dialog, which) -> dialog.cancel());
-        final AlertDialog alertDialog=builder.create();
+        final AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
 
@@ -419,6 +470,7 @@ public class MainActivity extends AppCompatActivity {
                 "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
         new MyAsyncTaskgetNews().execute(url);
     }
+
     //***********************************************************
     public void send(View view) throws UnsupportedEncodingException {
         String url;
@@ -436,8 +488,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             //before works
         }
+
         @Override
-        protected String  doInBackground(String... params) {
+        protected String doInBackground(String... params) {
             try {
                 String NewsData;
                 //define the url we have to connect with
@@ -458,37 +511,78 @@ public class MainActivity extends AppCompatActivity {
                     //end connection
                     urlConnection.disconnect();
                 }
-            }catch (Exception ignored){}
+            } catch (Exception ignored) {
+            }
             return null;
         }
+
         protected void onProgressUpdate(String... progress) {
             try {
                 //display response data
-                JSONObject json= new JSONObject(progress[0]);
-                String message=json.getString("msg");
+                JSONObject json = new JSONObject(progress[0]);
+                String message = json.getString("msg");
 
-                Toast.makeText(getApplicationContext(),message,Toast.LENGTH_LONG).show();
-            } catch (Exception ignored) {}
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+            } catch (Exception ignored) {
+            }
         }
-        protected void onPostExecute(String  result2){
+
+        protected void onPostExecute(String result2) {
         }
     }
 
     // this method convert any stream to string
     public static String ConvertInputToStringNoChange(InputStream inputStream) {
 
-        BufferedReader bureader=new BufferedReader( new InputStreamReader(inputStream));
-        String line ;
-        String linereultcal="";
+        BufferedReader bureader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        String linereultcal = "";
 
-        try{
-            while((line=bureader.readLine())!=null) {
-                linereultcal+=line;
+        try {
+            while ((line = bureader.readLine()) != null) {
+                linereultcal += line;
             }
             inputStream.close();
-        }catch (Exception ignored){}
+        } catch (Exception ignored) {
+        }
 
         return linereultcal;
+    }
+
+    //accelerometer
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        xx = event.values[0];
+        yy = event.values[1];
+        zz = event.values[2];
+        xData.add(event.values[0]);
+        yData.add(event.values[1]);
+        zData.add(event.values[2]);
+
+        float t = (float) (Math.pow(xx, 2) + Math.pow(yy, 2) + Math.pow(zz, 2));
+        summ = (float) Math.sqrt(t);
+        timeNow = System.currentTimeMillis();
+
+        if (summ >= 65) {
+            jumpp = +1;
+            jump.setText(String.valueOf(jumpp));
+        } else if (summ > 35 && timeNow > timePrv + 20000) {
+            Toast.makeText(this, "you Fallen \nsumm is=> " + summ, Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "time now: " + timeNow + "\ntime prev: " + timePrv);
+            falll = +1;
+            fall.setText(String.valueOf(falll));
+            acceleration.add(summ);
+            timePrv = timeNow;
+        }
+
+        x.setText(String.valueOf(xx));
+        y.setText(String.valueOf(yy));
+        z.setText(String.valueOf(zz));
+        sum.setText(String.valueOf(summ));
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
 }

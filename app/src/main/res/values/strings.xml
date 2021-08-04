@@ -38,6 +38,19 @@
     <string name="detailInfoEmptyFields">Please add some information about the incident report</string>
     <string name="progress_detail">Please wait ...</string>
     <string name="title_activity_maps">Map</string>
-
+    <string name="x">X :</string>
+    <string name="y">Y :</string>
+    <string name="z">Z :</string>
+    <string name="acceleration_sum">Acceleration SUM :</string>
+    <string name="jump">jump :</string>
+    <string name="_0">0</string>
+    <string name="fall">fall :</string>
+    <string name="get_data">get Data</string>
+    <string name="save">Save</string>
+    <string name="load">Load</string>
+    <string name="addresses">Unable to get street Address</string>
+    <string name="not_Available">Not Available</string>
+    <string name="location_tracked">location is tracked</string>
+    <string name="not_tracking_location">Not tracking location</string>
 
 </resources>
