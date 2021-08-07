@@ -28,11 +28,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -101,19 +103,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public static final int DEFAULT_UPDATE_INTERVALE = 3;
     public static final int FAST_UPDATE_INTERVAL = 5;
     private static final int PERMISSIONS_FINE_LOCATION = 99;
+
     TextView tv_lat, tv_lon, tv_altitude, tv_accuracy, tv_speed, tv_sensor, tv_updates, tv_address;
-    Switch sw_locationsUpdates, sw_gps;
+    SwitchMaterial sw_locationsUpdates, sw_gps;
+
     boolean updatesOn = false;
-    String senderId, myLocation, accuracy, alert;
+    String senderId;
+    String myLocation;
+    String accuracy;
+
     double lon, lat;
     LocationRequest locationRequest;
     LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
     //Fetch data
-    EditText editTextsenderid;
     Button buttonfetch, btnShowMap;
     ListView listview;
-
     ProgressDialog mProgressDialog;
     public static final String KEY_SENDERID = "sender_id";
     String f_name;
@@ -138,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     ArrayList<Float> zData = new ArrayList<>();
     ArrayList<Float> acceleration = new ArrayList<>();
     long timeNow, timePrv = 0;
+    String alertTypes = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //QR code
         btnGen = findViewById(R.id.btn_generate);
         ivOutput = findViewById(R.id.iv_output);
+
         //Map
         btnShowMap = findViewById(R.id.showmap);
         //GPS
@@ -241,7 +249,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View v) {
                 GetMatchData();
                 try {
-                    sendAlertQR();
+                    alertTypes = "QR_code_scanned";
+                    sendAlertQR(alertTypes);
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
@@ -270,8 +279,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         assert sensorManager != null;
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener((SensorEventListener) MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        falll = Integer.parseInt(fall.getText().toString());
-        jumpp = Integer.parseInt(jump.getText().toString());
 
 
     }
@@ -460,21 +467,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         alertDialog.show();
     }
 
-    //send Alert someone scanned QR code
-    private void sendAlertQR() throws UnsupportedEncodingException {
+
+
+    // someone scanned QR code
+    public void sendAlertQR(String alertType) throws UnsupportedEncodingException {
         String url;
-        alert = "QR code scanned";
+
         url = "https://helptech29.000webhostapp.com/sendAlert.php?" +
                 "sender_id=" + senderId +
-                "&alert=" + alert.trim() +
+                "&alert=" + alertType.trim() +
                 "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
         new MyAsyncTaskgetNews().execute(url);
+
     }
+
 
     //***********************************************************
     public void send(View view) throws UnsupportedEncodingException {
         String url;
-
         url = "https://helptech29.000webhostapp.com/sendData.php?" +
                 "sender_id=" + senderId +
                 "&accuracy=" + accuracy.trim() +
@@ -563,12 +573,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         summ = (float) Math.sqrt(t);
         timeNow = System.currentTimeMillis();
 
+        falll = Integer.parseInt(fall.getText().toString());
+        jumpp = Integer.parseInt(jump.getText().toString());
+
         if (summ >= 65) {
             jumpp = +1;
             jump.setText(String.valueOf(jumpp));
         } else if (summ > 35 && timeNow > timePrv + 20000) {
             Toast.makeText(this, "you Fallen \nsumm is=> " + summ, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "time now: " + timeNow + "\ntime prev: " + timePrv);
+            Log.d(TAG, "\ntime now: " + timeNow + "\ntime prev: " + timePrv + "\nsumm: " + summ);
             falll = +1;
             fall.setText(String.valueOf(falll));
             acceleration.add(summ);

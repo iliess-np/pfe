@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/map"
     android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -9,13 +8,21 @@
     tools:context=".MapsActivity">
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/showmap"
-        android:onClick="showMainActivity"
+        android:layout_width="133dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="left|top"
-        android:text="Home Page"
-        android:padding="10dp"
         android:layout_marginTop="20dp"
-        android:paddingRight="10dp"/>
+        android:background="@drawable/btn_round"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:onClick="showMainActivity"
+        android:padding="10dp"
+        android:paddingEnd="10dp"
+        android:paddingRight="10dp"
+        android:text="@string/home_page"
+        android:textColor="#FFFFFF"
+        tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry,UsingOnClickInXml" />
+
 </fragment>

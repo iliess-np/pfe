@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
@@ -18,9 +19,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO: This method is called when the BroadcastReceiver is receiving
         // an Intent broadcast.
-//        Toast.makeText(context, "Geofence triggered...", Toast.LENGTH_SHORT).show();
 
         NotificationHelper notificationHelper = new NotificationHelper(context);
 
@@ -54,4 +53,5 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         }
 
     }
+
 }

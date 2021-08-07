@@ -1,4 +1,5 @@
 package com.iliessnp.pfe;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,14 +10,16 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.vishnusivadas.advanced_httpurlconnection.PutData;
 
 public class Login extends AppCompatActivity {
-    TextInputEditText textInputEditTextPhone , textInputEditTextEmail ,textInputEditTextPassword ;
+    TextInputEditText textInputEditTextPhone, textInputEditTextEmail, textInputEditTextPassword;
     Button btnLogin;
     TextView btnRegister;
     ProgressBar progressBar;
@@ -34,19 +37,18 @@ public class Login extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
 
         btnRegister.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(),SignUp.class);
+            Intent intent = new Intent(getApplicationContext(), SignUp.class);
             startActivity(intent);
             finish();
         });
 
         btnLogin.setOnClickListener(v -> {
-            String phone , email , password ;
+            String phone, email, password;
             phone = String.valueOf(textInputEditTextPhone.getText());
             email = String.valueOf(textInputEditTextEmail.getText());
             password = String.valueOf(textInputEditTextPassword.getText());
 
-            if ((!phone.equals("") || !email.equals("")) && !password.equals(""))
-            {
+            if ((!phone.equals("") || !email.equals("")) && !password.equals("")) {
                 progressBar.setVisibility(View.VISIBLE);
                 Handler handler = new Handler();
                 handler.post(() -> {
@@ -65,33 +67,33 @@ public class Login extends AppCompatActivity {
                         if (putData.onComplete()) {
                             progressBar.setVisibility(View.GONE);
                             String result = putData.getResult();
-                            Log.e("login",result);
-                            if (!result.equals("phone/email or Password wrong")){
-                                Intent intent=new Intent(getApplicationContext(),MapsActivity.class);
+                            Log.e("login: sender id ", result);
+                            if (!result.equals("phone/email or Password wrong")) {
+                                Intent intent = new Intent(Login.this, MapsActivity.class);
                                 intent.putExtra("id", result);
                                 startActivity(intent);
                                 finish();
-                            }else {
-                                Toast.makeText(getApplicationContext(),result,Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
                 });
-            }else {
-                if( TextUtils.isEmpty(textInputEditTextPassword.getText())){
+            } else {
+                if (TextUtils.isEmpty(textInputEditTextPassword.getText())) {
                     String emptyField = getString(R.string.emptyField);
-                    textInputEditTextPassword.setError( emptyField );
+                    textInputEditTextPassword.setError(emptyField);
                 }
-                if( TextUtils.isEmpty(textInputEditTextPhone.getText())){
+                if (TextUtils.isEmpty(textInputEditTextPhone.getText())) {
                     String emptyField = getString(R.string.emptyField);
-                    textInputEditTextPhone.setError( emptyField );
+                    textInputEditTextPhone.setError(emptyField);
                 }
-                if( TextUtils.isEmpty(textInputEditTextEmail.getText())){
+                if (TextUtils.isEmpty(textInputEditTextEmail.getText())) {
                     String emptyField = getString(R.string.emptyField);
-                    textInputEditTextEmail.setError( emptyField );
+                    textInputEditTextEmail.setError(emptyField);
                 }
                 String emptyFields = getString(R.string.emptyFields);
-                Toast.makeText(getApplicationContext(),emptyFields,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), emptyFields, Toast.LENGTH_SHORT).show();
             }
         });
         String myname = getString(R.string.myname);

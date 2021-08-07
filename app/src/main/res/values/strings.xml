@@ -17,6 +17,7 @@
     <string name="commune">Commune</string>
     <string name="detailinfo">informations en détaillées</string>
     <string name="senderid">sender Id</string>
+
     <string name="gpslocation">gpsLocalisation</string>
     <string name="picurl">picUrl</string>
     <string name="insert_data">insérer des données</string>
@@ -36,14 +37,14 @@
     <string name="PasswordIncorrect">Password Incorrect</string>
     <string name="addPic">Please Add a picture of the incident</string>
     <string name="detailInfoEmptyFields">Please add some information about the incident report</string>
-    <string name="progress_detail">Please wait ...</string>
+    <string name="progress_detail">Please wait …</string>
     <string name="title_activity_maps">Map</string>
     <string name="x">X :</string>
     <string name="y">Y :</string>
     <string name="z">Z :</string>
     <string name="acceleration_sum">Acceleration SUM :</string>
     <string name="jump">jump :</string>
-    <string name="_0">0</string>
+    <string name="_0">00</string>
     <string name="fall">fall :</string>
     <string name="get_data">get Data</string>
     <string name="save">Save</string>
@@ -52,5 +53,23 @@
     <string name="not_Available">Not Available</string>
     <string name="location_tracked">location is tracked</string>
     <string name="not_tracking_location">Not tracking location</string>
+    <string name="show_map">show Map</string>
+    <string name="lat">Lat:</string>
+    <string name="lon">lon:</string>
+    <string name="altitude">Altitude:</string>
+    <string name="accuracy">Accuracy:</string>
+    <string name="speed">Speed:</string>
+    <string name="address">Address:</string>
+    <string name="sensor">Sensor:</string>
+    <string name="cell_tower_wifi">Cell Tower + Wifi</string>
+    <string name="updates">Updates:</string>
+    <string name="off">Off</string>
+    <string name="send_data">Send data</string>
+    <string name="get_my_information">Get info</string>
+    <string name="generate_my_qr_code">Gen QRcode</string>
+    <string name="location_updates">Location Updates</string>
+    <string name="gps_savepower">GPS/SavePower</string>
+    <string name="home_page">Home Page</string>
+    <string name="tv_result">tv result</string>
 
 </resources>

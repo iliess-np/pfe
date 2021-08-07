@@ -1,4 +1,5 @@
 package com.iliessnp.pfe;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -47,15 +48,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int BACKGROUND_LOCATION_ACCESS_REQUEST_CODE = 10002;
     String senderId;
     LocationManager locationManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        Intent intent = getIntent();
-        if (intent.getExtras() != null) {
-            senderId = intent.getExtras().getString("id");
+//        Intent intent = getIntent();
+//        if (intent.getExtras() != null) {
+//            senderId = intent.getExtras().getString("id");
+//        }
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if (extras == null) {
+                senderId = null;
+            } else {
+                senderId = extras.getString("id");
+            }
+        } else {
+            senderId = (String) savedInstanceState.getSerializable("id");
         }
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -64,17 +77,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         geofencingClient = LocationServices.getGeofencingClient(this);
         geofenceHelper = new GeofenceHelper(this);
 
-        locationManager=(LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         //Check gps is enable or not
         assert locationManager != null;
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-        {
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             OnGPS();// Fun enable gps
         }
 
     }
-
-
 
 
     /**
@@ -115,7 +125,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == FINE_LOCATION_ACCESS_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 //We have the permission
@@ -195,7 +205,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "onSuccess: Geofence Added...");
+                        Log.d(TAG, "onSuccess: GeoFence Added...");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -216,16 +226,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         CircleOptions circleOptions = new CircleOptions();
         circleOptions.center(latLng);
         circleOptions.radius(radius);
-        circleOptions.strokeColor(Color.argb(255, 255, 0,0));
-        circleOptions.fillColor(Color.argb(64, 255, 0,0));
+        circleOptions.strokeColor(Color.argb(255, 255, 0, 0));
+        circleOptions.fillColor(Color.argb(64, 255, 0, 0));
         circleOptions.strokeWidth(4);
         mMap.addCircle(circleOptions);
     }
 
-
     //dialog to enable gps
     private void OnGPS() {
-        final android.app.AlertDialog.Builder builder= new android.app.AlertDialog.Builder(this);
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         builder
                 .setMessage("Enable GPS")
                 .setCancelable(false)
@@ -233,12 +242,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
                 .setNegativeButton("NO",
                         (dialog, which) -> dialog.cancel());
-        final AlertDialog alertDialog=builder.create();
+        final AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
+
     //show MainActivity
-    public void showMainActivity(View view){
-        Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+    public void showMainActivity(View view) {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.putExtra("id", senderId);
         startActivity(intent);
     }
