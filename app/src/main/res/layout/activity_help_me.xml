@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".HelpMe">
+
+    <Button
+        android:id="@+id/btn_showHome"
+        android:layout_width="133dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|top"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/btn_round"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:padding="10dp"
+        android:paddingEnd="10dp"
+        android:paddingRight="10dp"
+        android:text="@string/home_page"
+        android:textColor="#FFFFFF"
+        tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry" />
+
+    <Button
+        android:id="@+id/btn_sms"
+        android:layout_width="133dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="150dp"
+        android:background="@drawable/btn_round_red"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:padding="10dp"
+        android:paddingEnd="10dp"
+        android:paddingRight="10dp"
+        android:text="Send SMS"
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"
+        tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry" />
+
+    <Button
+        android:id="@+id/btn_call"
+        android:layout_width="133dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/btn_round_red"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:padding="10dp"
+        android:paddingEnd="10dp"
+        android:paddingRight="10dp"
+        android:text="Call Emergancy"
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"
+        tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry" />
+
+
+
+</LinearLayout>

@@ -49,15 +49,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String senderId;
     LocationManager locationManager;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-//        Intent intent = getIntent();
-//        if (intent.getExtras() != null) {
-//            senderId = intent.getExtras().getString("id");
-//        }
+        //get sender Id
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras == null) {
@@ -83,7 +81,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             OnGPS();// Fun enable gps
         }
-
+        showMainActivityy();
     }
 
 
@@ -99,13 +97,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
+        // Add a marker and move the camera
         LatLng defaultPosition = new LatLng(35.414160, 0.130746);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultPosition, 16));
-
         enableUserLocation();
-
         mMap.setOnMapLongClickListener(this);
     }
 
@@ -142,7 +137,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.setMyLocationEnabled(true);
             } else {
                 //We do not have the permission..
-
             }
         }
 
@@ -171,11 +165,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, BACKGROUND_LOCATION_ACCESS_REQUEST_CODE);
                 }
             }
-
         } else {
             handleMapLongClick(latLng);
         }
-
     }
 
     private void handleMapLongClick(LatLng latLng) {
@@ -188,6 +180,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addGeofence(LatLng latLng, float radius) {
 
         Geofence geofence = geofenceHelper.getGeofence(GEOFENCE_ID, latLng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT);
+        Log.d(TAG, "GeoFencee: " + String.valueOf(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_DWELL | Geofence.GEOFENCE_TRANSITION_EXIT));
+
         GeofencingRequest geofencingRequest = geofenceHelper.getGeofencingRequest(geofence);
         PendingIntent pendingIntent = geofenceHelper.getPendingIntent();
 
@@ -251,5 +245,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.putExtra("id", senderId);
         startActivity(intent);
+    }
+
+    //go to MainActivity this just temp Fix so be kind *-*
+    public void showMainActivityy() {
+        if (MainActivity.firstTime) {
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.putExtra("id", senderId);
+            startActivity(intent);
+            MainActivity.firstTime = false;
+        }
     }
 }

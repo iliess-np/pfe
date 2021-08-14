@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -26,12 +25,23 @@
             android:onClick="showMap"
             android:text="@string/show_map"
             android:textColor="#FFFFFF"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.496"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_sensor"
             tools:ignore="RtlHardcoded,UsingOnClickInXml" />
+
+        <Button
+            android:id="@+id/btn_panic"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/btn_round_red"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:onClick="showMap"
+            android:text="Panic Help Me"
+            android:textColor="#FFFFFF"
+            tools:ignore="RtlHardcoded,UsingOnClickInXml" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -261,13 +271,13 @@
 
 
                 <Button
+                    android:id="@+id/btn_sendData"
                     android:layout_width="133dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_round"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:onClick="send"
                     android:text="@string/send_data"
                     android:textColor="#FFFFFF"
                     tools:ignore="ButtonStyle,UsingOnClickInXml" />
@@ -300,6 +310,15 @@
                     tools:ignore="ButtonStyle" />
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/tv_result"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppinsmedium"
+                android:text="@string/tv_result"
+                android:textSize="20sp" />
+
             <ImageView
                 android:id="@+id/iv_output"
                 android:layout_width="match_parent"
@@ -309,10 +328,10 @@
                 android:scaleType="fitCenter" />
 
             <TextView
-                android:layout_marginTop="20dp"
                 android:id="@+id/x"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:fontFamily="@font/poppinsmedium"
                 android:paddingStart="16dp"
                 android:paddingLeft="32dp"

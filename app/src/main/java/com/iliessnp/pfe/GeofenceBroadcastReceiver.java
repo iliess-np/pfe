@@ -16,6 +16,11 @@ import java.util.List;
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
     private static final String TAG = "GeofenceBroadcastReceiv";
+    private static int transitionType;
+
+    public static int getTransitionType() {
+        return transitionType;
+    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -35,7 +40,8 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             Log.d(TAG, "onReceive: " + geofence.getRequestId());
         }
 //        Location location = geofencingEvent.getTriggeringLocation();
-        int transitionType = geofencingEvent.getGeofenceTransition();
+        transitionType = geofencingEvent.getGeofenceTransition();
+
 
         switch (transitionType) {
             case Geofence.GEOFENCE_TRANSITION_ENTER:
