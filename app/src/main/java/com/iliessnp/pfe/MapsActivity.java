@@ -55,7 +55,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        showmap = findViewById(R.id.btn_showMap);
+        showmap = findViewById(R.id.btn_showMain);
         showmap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -76,35 +77,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public static final int DEFAULT_UPDATE_INTERVALE = 3;
     public static final int FAST_UPDATE_INTERVAL = 5;
     public static final String KEY_SENDERID = "sender_id";
-    private static final int PERMISSIONS_FINE_LOCATION = 99;
-    //accelerometer
     private static final String TAG = "MainActivity";
+    private static final int PERMISSIONS_FINE_LOCATION = 99;
     public static boolean firstTime = true;
+
+    //accelerometer
     TextView tv_lat, tv_lon, tv_altitude, tv_accuracy, tv_speed, tv_sensor, tv_updates, tv_address;
     SwitchMaterial sw_locationsUpdates, sw_gps;
-    boolean updatesOn = false;
-    String senderId;
-    String myLocation = "";
-    String accuracy;
-    String myLocationPrv = "1";
+    String senderId, myLocation = "", accuracy, myLocationPrv = "1";
     double lon, lat;
     LocationRequest locationRequest;
     LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
     //Fetch data
-    Button buttonfetch, btnShowMap, btnPanic;
+    Button btnFetch, btnShowMap, btnPanic;
     ListView listview;
     ProgressDialog mProgressDialog;
-    String f_name;
-    String l_name;
-    String phone;
+    String f_name, l_name, phone;
     //QR code
     Button btnGen, btnSendData;
     ImageView ivOutput;
     LocationManager locationManager;
     SensorManager sensorManager;
     Sensor accelerometer;
-    TextView x, y, z, sum, jump, fall;
+    TextView x, y, z, sum, jump, fall, tv_result;
     float xx, yy, zz, summ;
     int falll, jumpp;
     ArrayList<Float> xData = new ArrayList<>();
@@ -113,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     ArrayList<Float> acceleration = new ArrayList<>();
     long timeNow, timePrv = 0;
     String alertTypes = "";
-    private String TransitionTypeInitial = "", TransitionTypePrv;
+    private String TransitionTypeInitial = "", TransitionTypePrv = "tv_result";
 
     // this method convert any stream to string
     public static String ConvertInputToStringNoChange(InputStream inputStream) {
@@ -128,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             inputStream.close();
         } catch (Exception ignored) {
+            Log.e(TAG, "catch inputStream ConvertInputToStringNoChange");
         }
 
         return linereultcal;
@@ -147,7 +144,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ivOutput = findViewById(R.id.iv_output);
 
         //Map
-        btnShowMap = findViewById(R.id.showmap);
+        btnShowMap = findViewById(R.id.btn_showMap);
+
         //GPS
         tv_lat = findViewById(R.id.tv_lat);
         tv_lon = findViewById(R.id.tv_lon);
@@ -166,40 +164,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         locationRequest.setInterval(1000 * DEFAULT_UPDATE_INTERVALE);
         locationRequest.setFastestInterval(1000 * FAST_UPDATE_INTERVAL);
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        //Fetch data
+        btnFetch = (Button) findViewById(R.id.btnfetch);
+        listview = (ListView) findViewById(R.id.listView);
+        //QR code
+        btnGen = findViewById(R.id.btn_generate);
+        ivOutput = findViewById(R.id.iv_output);
+        //accelerometer
+        x = findViewById(R.id.x);
+        y = findViewById(R.id.y);
+        z = findViewById(R.id.z);
+        sum = findViewById(R.id.sum);
+        jump = findViewById(R.id.jump);
+        fall = findViewById(R.id.fall);
+        tv_result = findViewById(R.id.tv_result);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        //Check gps is enable or not
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        assert locationManager != null;
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            OnGPS();
-        }
-
-        //this  will, be called wen interval is met
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                Location location = locationResult.getLastLocation();
-                updateUIValues(location);
-            }
-        };
-
-        //Switch gps Accuracy
         sw_gps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (sw_gps.isChecked()) {
                     //most accurate position
                     locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                    tv_sensor.setText("Using GPS");
+                    tv_sensor.setText(R.string.sw_gps_singGPS);
                 } else {
                     locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-                    tv_sensor.setText("Using Tower + WIFI");
+                    tv_sensor.setText(R.string.sw_gps_singWifi);
                 }
             }
         });
 
-        //Switch btw showing gps data On/Off
         sw_locationsUpdates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -211,13 +205,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        updateGPS();
-
-        //Fetch data
-        buttonfetch = (Button) findViewById(R.id.btnfetch);
-        listview = (ListView) findViewById(R.id.listView);
-
-        buttonfetch.setOnClickListener(new View.OnClickListener() {
+        btnFetch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -229,10 +217,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        //QR code
-        btnGen = findViewById(R.id.btn_generate);
-        ivOutput = findViewById(R.id.iv_output);
-
         btnGen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -241,6 +225,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     alertTypes = "QR_code_scanned";
                     sendAlertQR(alertTypes);
                 } catch (UnsupportedEncodingException e) {
+                    Log.e(TAG, "catch sendAlertQR btnGen");
+
                     e.printStackTrace();
                 }
                 String sText = f_name + "\n" + l_name + "\n" + phone;
@@ -252,26 +238,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Bitmap bitmap = encoder.createBitmap(matrix);
                     ivOutput.setImageBitmap(bitmap);
                 } catch (WriterException e) {
+                    Log.e(TAG, "catch QR btnGen");
                     e.printStackTrace();
                 }
             }
         });
-        GetMatchData();
-        //accelerometer
-        x = findViewById(R.id.x);
-        y = findViewById(R.id.y);
-        z = findViewById(R.id.z);
-        sum = findViewById(R.id.sum);
-        jump = findViewById(R.id.jump);
-        fall = findViewById(R.id.fall);
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        assert sensorManager != null;
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener((SensorEventListener) MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-
-
-        TextView tv_result = findViewById(R.id.tv_result);
-        TransitionTypePrv = String.valueOf(tv_result.getText());
 
         btnSendData.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -279,23 +250,87 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 try {
                     send();
                 } catch (UnsupportedEncodingException e) {
+                    Log.e(TAG, "catch send btnSendData");
                     e.printStackTrace();
                 }
             }
         });
 
-//        updateGPS();
+        btnShowMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMap();
+            }
+        });
 
+        btnPanic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    alertTypes = "user_in_Panic";
+                    sendAlertQR(alertTypes);
+                } catch (UnsupportedEncodingException e) {
+                    Log.e(TAG, "catch sendAlertQR btnPanic");
+                    e.printStackTrace();
+                }
+                if (myLocation == null) {
+                    updateGPS();
+                }
+                Intent intent = new Intent(getApplicationContext(), HelpMe.class);
+                intent.putExtra("id", senderId);
+                intent.putExtra("phone", phone);
+                intent.putExtra("myLocation", myLocation);
+                startActivity(intent);
+            }
+        });
+
+        try {
+            Thread.sleep(4 * 1000);
+        } catch (InterruptedException ie) {
+            Log.e(TAG, "catch Thread sleep");
+            Thread.currentThread().interrupt();
+        }
+
+
+        //Check gps is enable or not
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        assert locationManager != null;
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            OnGPS();
+        }
+
+        assert sensorManager != null;
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener((SensorEventListener) MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+        //this  will, be called wen interval is met
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                Location location = locationResult.getLastLocation();
+                if (location != null) {
+                    //TODO:  check it
+                    //Fixed
+                    updateUIValues(location);
+                }
+            }
+        };
+        updateGPS();
         Timer t = new Timer();
         t.schedule(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("checking if TransitionType changed");
+                //TODO: check it
+                //Fixed
                 updateGPS();
                 if (!myLocation.equals(myLocationPrv)) {
                     try {
+                        //TODO:  check it
+                        //Fixed
                         send();
                     } catch (UnsupportedEncodingException e) {
+                        Log.e(TAG, "catch send Timer");
                         e.printStackTrace();
                     }
                     myLocationPrv = myLocation;
@@ -314,12 +349,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             str = "GEOFENCE_TRANSITION_DWELL";
                             break;
                         default:
-                            str = TransitionTypeInitial;
+                            str = "TransitionTypeInitial";
                     }
                     tv_result.setText(str);
                     try {
+                        //TODO:  check it
+                        //Fixed
                         sendAlertQR(str);
                     } catch (UnsupportedEncodingException e) {
+                        Log.e(TAG, "catch sendAlertQR Timer");
                         e.printStackTrace();
                     }
                     TransitionTypePrv = TransitionTypeInitial;
@@ -327,36 +365,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }, 0, 10000);
 
-        btnPanic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    alertTypes = "user_in_Panic";
-                    sendAlertQR(alertTypes);
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-                if (myLocation == null) {
-                    updateGPS();
-                }
-                Intent intent = new Intent(getApplicationContext(), HelpMe.class);
-                intent.putExtra("id", senderId);
-                intent.putExtra("phone", phone);
-                intent.putExtra("myLocation", myLocation);
-                startActivity(intent);
-            }
-        });
-
-
     }
 
-    public void showMap(View view) {
-        startActivity(new Intent(this, MapsActivity.class));
+    public void showMap() {
+        Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+        intent.putExtra("id", senderId);
+        startActivity(intent);
     }
 
     //Fetch data
     private void GetMatchData() {
-
         mProgressDialog = new ProgressDialog(MainActivity.this);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setMessage(getString(R.string.progress_detail));
@@ -365,25 +383,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mProgressDialog.setProgress(0);
         mProgressDialog.setProgressNumberFormat(null);
         mProgressDialog.setProgressPercentFormat(null);
+        //change added
+        mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mProgressDialog.dismiss();
+            }
+        });
         mProgressDialog.show();
+        mProgressDialog.setProgress(25);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, Config5.MATCHDATA_URL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        if (response.trim().equals("success")) {
-                            showJSON(response);
-                            mProgressDialog.dismiss();
-                        } else {
-                            showJSON(response);
-                            mProgressDialog.dismiss();
-                        }
+                        mProgressDialog.setProgress(43);
+                        mProgressDialog.setProgress(86);
+                        showJSON(response);
+                        mProgressDialog.setProgress(100);
+                        mProgressDialog.dismiss();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "" + error, Toast.LENGTH_LONG).show();
+                        //i think this one is where its shows when going back to home screen
+                        Toast.makeText(MainActivity.this, "error onErrorResponse GetMatchData " + error, Toast.LENGTH_LONG).show();
+                        Log.e(TAG,"error onErrorResponse GetMatchData "+error);
+                        mProgressDialog.dismiss();
                     }
                 }) {
             @Override
@@ -393,9 +420,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return map;
             }
         };
-
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         requestQueue.add(stringRequest);
+        mProgressDialog.dismiss();
+
     }
 
     private void showJSON(String response) {
@@ -445,7 +473,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void startLocationsUpdates() {
         tv_updates.setText(R.string.location_tracked);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+            //get permission
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_FINE_LOCATION);
+            }
+//            return;
         }
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
         updateGPS();
@@ -461,7 +493,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             updateGPS();
         } else {
-            //TODO
+            //TODO: its crash here
             Toast.makeText(this, "pleas grant Permission to the APP so it can function", Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -474,37 +506,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void updateGPS() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-                        lat = location.getLatitude();
-                        lon = location.getLongitude();
-                        accuracy = String.valueOf(location.getAccuracy());
-                        double latRound = Math.round(lat * 10000.0) / 10000.0;
-                        double lonRound = Math.round(lon * 10000.0) / 10000.0;
-                        myLocation = String.valueOf(latRound) + "," + String.valueOf(lonRound);
-                        updateUIValues(location);
-                    } else {
-                        startLocationsUpdates();
-                    }
-                }
-            });
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            if (location != null) {
+//                                lat = location.getLatitude();
+//                                lon = location.getLongitude();
+//                                accuracy = String.valueOf(location.getAccuracy());
+//                                double latRound = Math.round(lat * 10000.0) / 10000.0;
+//                                double lonRound = Math.round(lon * 10000.0) / 10000.0;
+//                                myLocation = latRound + "," + lonRound;
+                                updateUIValues(location);
+                            } else {
+                                startLocationsUpdates();
+                            }
+                        }
+                    });
         } else {
-            //get permission
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_FINE_LOCATION);
-            }
+//            //get permission
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_FINE_LOCATION);
+//            }
+            startLocationsUpdates();
         }
     }
 
     //update UI Values
     private void updateUIValues(Location location) {
 
-        tv_lat.setText(String.valueOf(location.getLatitude()));
-        tv_lon.setText(String.valueOf(location.getLongitude()));
-        tv_accuracy.setText(String.valueOf(location.getAccuracy()));
+        lat = location.getLatitude();
+        lon = location.getLongitude();
+        accuracy = String.valueOf(location.getAccuracy());
+        double latRound = Math.round(lat * 10000.0) / 10000.0;
+        double lonRound = Math.round(lon * 10000.0) / 10000.0;
+        myLocation = latRound + "," + lonRound;
+
+        tv_lat.setText(String.valueOf(lat));
+        tv_lon.setText(String.valueOf(lon));
+        tv_accuracy.setText(String.valueOf(accuracy));
 
         if (location.hasAltitude()) {
             tv_altitude.setText(String.valueOf(location.getAltitude()));
@@ -524,20 +566,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
             tv_address.setText(addresses.get(0).getAddressLine(0));
         } catch (Exception e) {
+            Log.e(TAG, "catch addresses updateUIValues");
             tv_address.setText(R.string.addresses);
         }
-
-//        lat = location.getLatitude();
-//        lon = location.getLongitude();
-//        accuracy = String.valueOf(location.getAccuracy());
-//        myLocation = lat + "," + lon;
-
     }
 
     //dialog to enable gps
     private void OnGPS() {
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("YES", (dialog, which) -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("NO", (dialog, which) -> dialog.cancel());
+        builder
+                .setMessage("Enable GPS")
+                .setCancelable(false)
+                .setPositiveButton("YES", (dialog, which) ->
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)))
+                .setNegativeButton("NO", (dialog, which) ->
+                        dialog.cancel());
+
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
@@ -545,30 +589,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // someone scanned QR code
     public void sendAlertQR(String alertType) throws UnsupportedEncodingException {
         String url;
-        if (myLocation == null) {
-            updateGPS();
-        } else {
-            url = "https://helptech29.000webhostapp.com/sendAlert.php?" +
-                    "sender_id=" + senderId +
-                    "&alert=" + alertType.trim() +
-                    "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
-            new MyAsyncTaskgetNews().execute(url);
+        if (senderId != null) {
+            if (accuracy == null || myLocation == null) {
+                updateGPS();
+            } else {
+                url = "https://helptech29.000webhostapp.com/sendAlert.php?" +
+                        "sender_id=" + senderId +
+                        "&alert=" + alertType.trim() +
+                        "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
+                new MyAsyncTaskgetNews().execute(url);
 
+            }
         }
     }
 
     //***********************************************************
     public void send() throws UnsupportedEncodingException {
         String url;
-        if (accuracy == null || myLocation == null) {
-            updateGPS();
-        } else {
-            url = "https://helptech29.000webhostapp.com/sendData.php?" +
-                    "sender_id=" + senderId +
-                    "&accuracy=" + accuracy.trim() +
-                    "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
-            new MyAsyncTaskgetNews().execute(url);
+        if (senderId != null) {
+            if (accuracy == null || myLocation == null) {
+                updateGPS();
+            } else {
+                url = "https://helptech29.000webhostapp.com/sendData.php?" +
+                        "sender_id=" + senderId +
+                        "&accuracy=" + accuracy.trim() +
+                        "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
+                new MyAsyncTaskgetNews().execute(url);
+            }
         }
+
     }
 
     //accelerometer
@@ -601,6 +650,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 sendAlertQR(alertTypes);
             } catch (UnsupportedEncodingException e) {
+                Log.e(TAG, "catch sendAlertQR onSensorChanged");
                 e.printStackTrace();
             }
             acceleration.add(summ);

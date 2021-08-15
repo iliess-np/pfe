@@ -71,5 +71,7 @@
     <string name="gps_savepower">GPS/SavePower</string>
     <string name="home_page">Home Page</string>
     <string name="tv_result">tv result</string>
+    <string name="sw_gps_singWifi">Using Tower + WIFI(PRIORITY_BALANCED_POWER_ACCURACY)</string>
+    <string name="sw_gps_singGPS">Using GPS(PRIORITY_HIGH_ACCURACY)</string>
 
 </resources>

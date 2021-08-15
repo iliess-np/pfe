@@ -8,7 +8,7 @@
     tools:context=".MapsActivity">
 
     <Button
-        android:id="@+id/btn_showMap"
+        android:id="@+id/btn_showMain"
         android:layout_width="133dp"
         android:layout_height="wrap_content"
         android:layout_gravity="left|top"
@@ -22,6 +22,6 @@
         android:paddingRight="10dp"
         android:text="@string/home_page"
         android:textColor="#FFFFFF"
-        tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry,UsingOnClickInXml" />
+        tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry" />
 
 </fragment>
