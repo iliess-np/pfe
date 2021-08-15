@@ -19,7 +19,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PFE"
         android:usesCleartextTraffic="true">
-        <activity android:name=".HelpMe"></activity>
+        <activity android:name=".HelpMe"
+            android:theme="@style/Theme.Design.Light.NoActionBar" />
 
         <receiver
             android:name=".GeofenceBroadcastReceiver"

@@ -8,7 +8,7 @@
     tools:context=".MapsActivity">
 
     <Button
-        android:id="@+id/showmap"
+        android:id="@+id/btn_showMap"
         android:layout_width="133dp"
         android:layout_height="wrap_content"
         android:layout_gravity="left|top"
@@ -17,7 +17,6 @@
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
-        android:onClick="showMainActivity"
         android:padding="10dp"
         android:paddingEnd="10dp"
         android:paddingRight="10dp"

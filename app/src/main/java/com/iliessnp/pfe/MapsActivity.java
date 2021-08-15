@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
@@ -48,13 +49,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int BACKGROUND_LOCATION_ACCESS_REQUEST_CODE = 10002;
     String senderId;
     LocationManager locationManager;
-
+    Button showmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
+        showmap = findViewById(R.id.btn_showMap);
+        showmap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMainActivity();
+            }
+        });
         //get sender Id
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -241,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     //show MainActivity
-    public void showMainActivity(View view) {
+    public void showMainActivity() {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.putExtra("id", senderId);
         startActivity(intent);

@@ -92,14 +92,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LocationCallback locationCallback;
     FusedLocationProviderClient fusedLocationProviderClient;
     //Fetch data
-    Button buttonfetch, btnShowMap,btnPanic;
+    Button buttonfetch, btnShowMap, btnPanic;
     ListView listview;
     ProgressDialog mProgressDialog;
     String f_name;
     String l_name;
     String phone;
     //QR code
-    Button btnGen,btnSendData;
+    Button btnGen, btnSendData;
     ImageView ivOutput;
     LocationManager locationManager;
     SensorManager sensorManager;
@@ -115,7 +115,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     String alertTypes = "";
     private String TransitionTypeInitial = "", TransitionTypePrv;
 
+    // this method convert any stream to string
+    public static String ConvertInputToStringNoChange(InputStream inputStream) {
 
+        BufferedReader bureader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        String linereultcal = "";
+
+        try {
+            while ((line = bureader.readLine()) != null) {
+                linereultcal += line;
+            }
+            inputStream.close();
+        } catch (Exception ignored) {
+        }
+
+        return linereultcal;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -275,10 +291,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void run() {
                 System.out.println("checking if TransitionType changed");
-
-
-                    updateGPS();
-                if (!myLocation.equals(myLocationPrv)){
+                updateGPS();
+                if (!myLocation.equals(myLocationPrv)) {
                     try {
                         send();
                     } catch (UnsupportedEncodingException e) {
@@ -286,9 +300,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                     myLocationPrv = myLocation;
                 }
-
-
-
                 TransitionTypeInitial = String.valueOf(GeofenceBroadcastReceiver.getTransitionType());
                 if (!TransitionTypeInitial.equals(TransitionTypePrv)) {
                     String str;
@@ -329,10 +340,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     updateGPS();
                 }
                 Intent intent = new Intent(getApplicationContext(), HelpMe.class);
-                    intent.putExtra("id", senderId);
-                    intent.putExtra("phone", phone);
-                    intent.putExtra("myLocation", myLocation);
-                    startActivity(intent);
+                intent.putExtra("id", senderId);
+                intent.putExtra("phone", phone);
+                intent.putExtra("myLocation", myLocation);
+                startActivity(intent);
             }
         });
 
@@ -350,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setMessage(getString(R.string.progress_detail));
         mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCancelable(true);
         mProgressDialog.setProgress(0);
         mProgressDialog.setProgressNumberFormat(null);
         mProgressDialog.setProgressPercentFormat(null);
@@ -448,11 +459,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                updateGPS();
-            } else {
-                Toast.makeText(this, "pleas grant Permission to the APP so it can function", Toast.LENGTH_SHORT).show();
-                finish();
-            }
+            updateGPS();
+        } else {
+            //TODO
+            Toast.makeText(this, "pleas grant Permission to the APP so it can function", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 //        }
     }
 
@@ -551,12 +563,58 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (accuracy == null || myLocation == null) {
             updateGPS();
         } else {
-        url = "https://helptech29.000webhostapp.com/sendData.php?" +
-                "sender_id=" + senderId +
-                "&accuracy=" + accuracy.trim() +
-                "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
-        new MyAsyncTaskgetNews().execute(url);
+            url = "https://helptech29.000webhostapp.com/sendData.php?" +
+                    "sender_id=" + senderId +
+                    "&accuracy=" + accuracy.trim() +
+                    "&gps_location=" + java.net.URLEncoder.encode(myLocation, "UTF-8");
+            new MyAsyncTaskgetNews().execute(url);
         }
+    }
+
+    //accelerometer
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        xx = event.values[0];
+        yy = event.values[1];
+        zz = event.values[2];
+        xData.add(event.values[0]);
+        yData.add(event.values[1]);
+        zData.add(event.values[2]);
+
+        float t = (float) (Math.pow(xx, 2) + Math.pow(yy, 2) + Math.pow(zz, 2));
+        summ = (float) Math.sqrt(t);
+
+        timeNow = System.currentTimeMillis();
+
+        falll = Integer.parseInt(fall.getText().toString());
+        jumpp = Integer.parseInt(jump.getText().toString());
+
+        if (summ >= 65) {
+            jumpp = +1;
+            jump.setText(String.valueOf(jumpp));
+        } else if (summ > 35 && timeNow > timePrv + 20000) {
+            Toast.makeText(this, "you Fallen \nsumm is=> " + summ, Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "\ntime now: " + timeNow + "\ntime prev: " + timePrv + "\nsumm: " + summ);
+            falll = +1;
+            fall.setText(String.valueOf(falll));
+            alertTypes = "patient_has_fallen";
+            try {
+                sendAlertQR(alertTypes);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            acceleration.add(summ);
+            timePrv = timeNow;
+        }
+
+        x.setText(String.valueOf(xx));
+        y.setText(String.valueOf(yy));
+        z.setText(String.valueOf(zz));
+        sum.setText(String.valueOf(summ));
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     // get news from server
@@ -606,70 +664,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         protected void onPostExecute(String result2) {
         }
-    }
-
-    // this method convert any stream to string
-    public static String ConvertInputToStringNoChange(InputStream inputStream) {
-
-        BufferedReader bureader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        String linereultcal = "";
-
-        try {
-            while ((line = bureader.readLine()) != null) {
-                linereultcal += line;
-            }
-            inputStream.close();
-        } catch (Exception ignored) {
-        }
-
-        return linereultcal;
-    }
-
-    //accelerometer
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        xx = event.values[0];
-        yy = event.values[1];
-        zz = event.values[2];
-        xData.add(event.values[0]);
-        yData.add(event.values[1]);
-        zData.add(event.values[2]);
-
-        float t = (float) (Math.pow(xx, 2) + Math.pow(yy, 2) + Math.pow(zz, 2));
-        summ = (float) Math.sqrt(t);
-
-        timeNow = System.currentTimeMillis();
-
-        falll = Integer.parseInt(fall.getText().toString());
-        jumpp = Integer.parseInt(jump.getText().toString());
-
-        if (summ >= 65) {
-            jumpp = +1;
-            jump.setText(String.valueOf(jumpp));
-        } else if (summ > 35 && timeNow > timePrv + 20000) {
-            Toast.makeText(this, "you Fallen \nsumm is=> " + summ, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "\ntime now: " + timeNow + "\ntime prev: " + timePrv + "\nsumm: " + summ);
-            falll = +1;
-            fall.setText(String.valueOf(falll));
-            alertTypes = "patient_has_fallen";
-            try {
-                sendAlertQR(alertTypes);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            acceleration.add(summ);
-            timePrv = timeNow;
-        }
-
-        x.setText(String.valueOf(xx));
-        y.setText(String.valueOf(yy));
-        z.setText(String.valueOf(zz));
-        sum.setText(String.valueOf(summ));
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
 
