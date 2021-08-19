@@ -1,8 +1,15 @@
 package com.iliessnp.pfe;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,26 +19,32 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.vishnusivadas.advanced_httpurlconnection.PutData;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class SignUp extends AppCompatActivity {
+    private static final String TAG = "SignUpActivity";
 
-    TextInputEditText textInputEditTextFname , textInputEditTextLname , textInputEditTextPhone
-            , textInputEditTextEmail ,textInputEditTextPassword , textInputEditTextPasswordRepeat;
+    TextInputEditText textInputEditTextFname, textInputEditTextLname, textInputEditTextPhone, textInputEditTextEmail, textInputEditTextPassword, textInputEditTextPasswordRepeat;
     Button btnSignUp;
     TextView TextViewlogin;
     ProgressBar progressBar;
-    Spinner spWilaya,spDaira,spCommune;
+    Spinner spWilaya, spDaira, spCommune;
+    ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +64,7 @@ public class SignUp extends AppCompatActivity {
         progressBar = findViewById(R.id.progress);
 
         TextViewlogin.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(),Login.class);
+            Intent intent = new Intent(getApplicationContext(), Login.class);
             startActivity(intent);
             finish();
         });
@@ -74,23 +87,23 @@ public class SignUp extends AppCompatActivity {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        ArrayList<String> arrayWilayas=new ArrayList<>();
-        final ArrayList<String> arraydairas=new ArrayList<>();
-        final ArrayList<String> arraycommunes=new ArrayList<>();
+        ArrayList<String> arrayWilayas = new ArrayList<>();
+        final ArrayList<String> arraydairas = new ArrayList<>();
+        final ArrayList<String> arraycommunes = new ArrayList<>();
         try {
-            JSONObject json= new JSONObject(jsonn);
-            final JSONArray wilaya=json.getJSONArray("wilayas");
+            JSONObject json = new JSONObject(jsonn);
+            final JSONArray wilaya = json.getJSONArray("wilayas");
 
             //JSONObject wilayas=json.getJSONObject("wilayas");
 
-            for ( int i=0; i<wilaya.length();i++){
-                JSONObject w= wilaya.getJSONObject(i)  ;
-                String wilayasString=w.getString("name");
-                int wilayasid=w.getInt("id");
-                arrayWilayas.add(wilayasid+":"+wilayasString);
-                JSONArray dairas=w.getJSONArray("dairas");
+            for (int i = 0; i < wilaya.length(); i++) {
+                JSONObject w = wilaya.getJSONObject(i);
+                String wilayasString = w.getString("name");
+                int wilayasid = w.getInt("id");
+                arrayWilayas.add(wilayasid + ":" + wilayasString);
+                JSONArray dairas = w.getJSONArray("dairas");
             }
-            ArrayAdapter<String> adapterwilaya=new ArrayAdapter<>(this,R.layout.support_simple_spinner_dropdown_item,arrayWilayas);
+            ArrayAdapter<String> adapterwilaya = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, arrayWilayas);
 
             spWilaya.setAdapter(adapterwilaya);
             spWilaya.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -100,36 +113,37 @@ public class SignUp extends AppCompatActivity {
                         arraydairas.clear();
                         arraycommunes.clear();
 
-                        JSONObject wjson= wilaya.getJSONObject((int) id);
-                        final JSONArray dairas=wjson.getJSONArray("dairas");
+                        JSONObject wjson = wilaya.getJSONObject((int) id);
+                        final JSONArray dairas = wjson.getJSONArray("dairas");
 
-                        for ( int i=0; i<dairas.length();i++){
-                            JSONObject dairasjsonJSONObject= dairas.getJSONObject(i)  ;
-                            String dairasString=dairasjsonJSONObject.getString("name");
+                        for (int i = 0; i < dairas.length(); i++) {
+                            JSONObject dairasjsonJSONObject = dairas.getJSONObject(i);
+                            String dairasString = dairasjsonJSONObject.getString("name");
                             arraydairas.add(dairasString);
                         }
-                        ArrayAdapter adapterdaira=new ArrayAdapter<>(SignUp.this
-                                ,R.layout.support_simple_spinner_dropdown_item,arraydairas);
+                        ArrayAdapter adapterdaira = new ArrayAdapter<>(SignUp.this
+                                , R.layout.support_simple_spinner_dropdown_item, arraydairas);
                         spDaira.setAdapter(adapterdaira);
                         spDaira.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                             @Override
                             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                 try {
                                     arraycommunes.clear();
-                                    JSONObject djson= dairas.getJSONObject((int) id);
-                                    JSONArray communes=djson.getJSONArray("communes");
-                                    for ( int k=0; k<communes.length();k++){
-                                        JSONObject communesjsonJSONObject= communes.getJSONObject(k)  ;
-                                        String communesString=communesjsonJSONObject.getString("name");
-                                        int communesid=communesjsonJSONObject.getInt("id");
+                                    JSONObject djson = dairas.getJSONObject((int) id);
+                                    JSONArray communes = djson.getJSONArray("communes");
+                                    for (int k = 0; k < communes.length(); k++) {
+                                        JSONObject communesjsonJSONObject = communes.getJSONObject(k);
+                                        String communesString = communesjsonJSONObject.getString("name");
+                                        int communesid = communesjsonJSONObject.getInt("id");
                                         arraycommunes.add(communesString);
                                     }
-                                    ArrayAdapter adaptercommunes=new ArrayAdapter<>(SignUp.this,R.layout.support_simple_spinner_dropdown_item,arraycommunes);
+                                    ArrayAdapter adaptercommunes = new ArrayAdapter<>(SignUp.this, R.layout.support_simple_spinner_dropdown_item, arraycommunes);
                                     spCommune.setAdapter(adaptercommunes);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
                             }
+
                             @Override
                             public void onNothingSelected(AdapterView<?> parent) {
                             }
@@ -138,17 +152,18 @@ public class SignUp extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
                 }
             });
             spWilaya.getSelectedItem().toString();
+        } catch (Exception ex) {
         }
-        catch (Exception ex){}
 
         // btn singUp
         btnSignUp.setOnClickListener(v -> {
-            String  fname ,  lname ,  phone , email , password , passwordRepeat ,  wilaya , daira;
+            String fname, lname, phone, email, password, passwordRepeat, wilaya, daira;
 
             fname = String.valueOf(textInputEditTextFname.getText());
             lname = String.valueOf(textInputEditTextLname.getText());
@@ -157,78 +172,86 @@ public class SignUp extends AppCompatActivity {
             password = String.valueOf(textInputEditTextPassword.getText());
             passwordRepeat = String.valueOf(textInputEditTextPasswordRepeat.getText());
 
-            wilaya = spWilaya.getSelectedItem().toString()  ;
-            daira = spDaira.getSelectedItem().toString()  ;
+            wilaya = spWilaya.getSelectedItem().toString();
+            daira = spDaira.getSelectedItem().toString();
 
-            if( TextUtils.isEmpty(textInputEditTextFname.getText())){
+            if (TextUtils.isEmpty(textInputEditTextFname.getText())) {
                 String emptyField = getString(R.string.emptyField);
-                textInputEditTextFname.setError( emptyField );
+                textInputEditTextFname.setError(emptyField);
             }
-            if( TextUtils.isEmpty(textInputEditTextLname.getText())){
+            if (TextUtils.isEmpty(textInputEditTextLname.getText())) {
                 String emptyField = getString(R.string.emptyField);
-                textInputEditTextLname.setError( emptyField );
+                textInputEditTextLname.setError(emptyField);
             }
-            if( TextUtils.isEmpty(textInputEditTextPhone.getText())){
+            if (TextUtils.isEmpty(textInputEditTextPhone.getText())) {
                 String emptyField = getString(R.string.emptyField);
-                textInputEditTextPhone.setError( emptyField );
+                textInputEditTextPhone.setError(emptyField);
             }
-            if( TextUtils.isEmpty(textInputEditTextPassword.getText())){
+            if (TextUtils.isEmpty(textInputEditTextPassword.getText())) {
                 String emptyField = getString(R.string.emptyField);
-                textInputEditTextPassword.setError( emptyField );
+                textInputEditTextPassword.setError(emptyField);
             }
-            if( TextUtils.isEmpty(textInputEditTextPasswordRepeat.getText())){
+            if (TextUtils.isEmpty(textInputEditTextPasswordRepeat.getText())) {
                 String emptyField = getString(R.string.emptyField);
-                textInputEditTextPasswordRepeat.setError( emptyField );
+                textInputEditTextPasswordRepeat.setError(emptyField);
             }
+            if (checkWifiOnAndConnected() || checkMobileOnAndConnected()) {
+                if (password.equals(passwordRepeat)) {
+                    if (!fname.equals("") && !lname.equals("") && (!phone.equals("") || !email.equals("")) && !password.equals("") && !passwordRepeat.equals("") && !wilaya.equals("") && !daira.equals("")) {
+                        progressBar.setVisibility(View.VISIBLE);
+                        Handler handler = new Handler();
+                        handler.post(() -> {
+                            String[] field = new String[7];
+                            field[0] = "f_name";
+                            field[1] = "l_name";
+                            field[2] = "phone";
+                            field[3] = "email";
+                            field[4] = "password";
+                            field[5] = "wilaya";
+                            field[6] = "daira";
 
-            if (password.equals(passwordRepeat)){
-                if (!fname.equals("") && !lname.equals("") && (!phone.equals("") || !email.equals("")) && !password.equals("") && !passwordRepeat.equals("") && !wilaya.equals("") &&!daira.equals("")){
-                    progressBar.setVisibility(View.VISIBLE);
-                    Handler handler = new Handler();
-                    handler.post(() -> {
-                        String[] field = new String[7];
-                        field[0] = "f_name";
-                        field[1] = "l_name";
-                        field[2] = "phone";
-                        field[3] = "email";
-                        field[4] = "password";
-                        field[5] = "wilaya";
-                        field[6] = "daira";
+                            String[] data = new String[7];
+                            data[0] = fname;
+                            data[1] = lname;
+                            data[2] = phone;
+                            data[3] = email;
+                            data[4] = password;
+                            data[5] = wilaya;
+                            data[6] = daira;
 
-                        String[] data = new String[7];
-                        data[0] = fname;
-                        data[1] = lname;
-                        data[2] = phone;
-                        data[3] = email;
-                        data[4] = password;
-                        data[5] = wilaya;
-                        data[6] = daira;
-
-                        PutData putData = new PutData("https://helptech29.000webhostapp.com/signup.php", "POST", field, data);
-                        if (putData.startPut()) {
-                            if (putData.onComplete()) {
-                                progressBar.setVisibility(View.GONE);
-                                String result = putData.getResult();
-                                if (result.equals("Sign_Up_Success")){
-                                    Toast.makeText(getApplicationContext(),result,Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(getApplicationContext(),Login.class);
-                                    startActivity(intent);
-                                    //finish();
-                                }else {
-                                    Toast.makeText(getApplicationContext(),result,Toast.LENGTH_SHORT).show();
+                            PutData putData = new PutData("https://helptech29.000webhostapp.com/signup.php", "POST", field, data);
+                            if (putData.startPut()) {
+                                if (putData.onComplete()) {
+                                    progressBar.setVisibility(View.GONE);
+                                    String result = putData.getResult();
+                                    if (result.equals("Sign_Up_Success")) {
+                                        Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(getApplicationContext(), Login.class);
+                                        startActivity(intent);
+                                        //finish();
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             }
-                        }
-                    });
-                }else {
-                    String emptyFields = getString(R.string.emptyFields);
-                    Toast.makeText(getApplicationContext(),emptyFields,Toast.LENGTH_SHORT).show();
+                        });
+                    } else {
+                        String emptyFields = getString(R.string.emptyFields);
+                        Toast.makeText(getApplicationContext(), emptyFields, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    String PasswordIncorrect = getString(R.string.PasswordIncorrect);
+                    textInputEditTextPasswordRepeat.setError(PasswordIncorrect);
+                    textInputEditTextPassword.setError(PasswordIncorrect);
+                    Toast.makeText(getApplicationContext(), PasswordIncorrect, Toast.LENGTH_SHORT).show();
                 }
-            }else {
-                String PasswordIncorrect = getString(R.string.PasswordIncorrect);
-                textInputEditTextPasswordRepeat.setError( PasswordIncorrect );
-                textInputEditTextPassword.setError( PasswordIncorrect );
-                Toast.makeText(getApplicationContext(),PasswordIncorrect,Toast.LENGTH_SHORT).show();
+            } else {
+                mProgressDialog.dismiss();
+                Toast.makeText(this, "you don't have internet connection", Toast.LENGTH_SHORT).show();
+                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+                        "you don't have internet connection", Snackbar.LENGTH_LONG);
+                snackbar.show();
+                OnWIFI();
             }
         });
 
@@ -237,5 +260,53 @@ public class SignUp extends AppCompatActivity {
         FloatingActionButton fab = findViewById(R.id.contact);
         fab.setOnClickListener(view -> Snackbar.make(view, myname, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
+    }
+
+    private boolean checkWifiOnAndConnected() {
+        WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wifiMgr != null;
+        if (wifiMgr.isWifiEnabled()) { // Wi-Fi is ON
+            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+            if (wifiInfo.getIpAddress() <= 0) {
+                return false; // Not connected to an AP
+            }
+            return true; // Connected to an AP
+        } else {
+            return false; // Wi-Fi is OFF
+        }
+    }
+
+    private boolean checkMobileOnAndConnected() {
+        boolean mobileDataEnabled = false; // Assume disabled
+        ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        try {
+            assert cm != null;
+            Class cmClass = Class.forName(cm.getClass().getName());
+            Method method = cmClass.getDeclaredMethod("getMobileDataEnabled");
+            method.setAccessible(true); // Make the method callable
+            // get the setting for "mobile data"
+            mobileDataEnabled = (Boolean) method.invoke(cm);
+            Toast.makeText(this, "checkMobileOnAndConnected " + mobileDataEnabled, Toast.LENGTH_SHORT).show();
+            return mobileDataEnabled;
+        } catch (Exception e) {
+            // Some problem accessible private API
+            // TODO do whatever error handling you want here
+        }
+        return mobileDataEnabled;
+    }
+
+
+    private void OnWIFI() {
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder
+                .setMessage("Enable WIFI")
+                .setCancelable(false)
+                .setPositiveButton("YES", (dialog, which) ->
+                        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)))
+                .setNegativeButton("NO", (dialog, which) ->
+                        dialog.cancel());
+
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }

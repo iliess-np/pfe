@@ -4,8 +4,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.util.Log;
-
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
@@ -14,7 +12,6 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class GeofenceHelper extends ContextWrapper {
 
-    private static final String TAG = "GeofenceHelper";
     PendingIntent pendingIntent;
 
     public GeofenceHelper(Context base) {
@@ -44,7 +41,6 @@ public class GeofenceHelper extends ContextWrapper {
         }
         Intent intent = new Intent(this, GeofenceBroadcastReceiver.class);
         pendingIntent = PendingIntent.getBroadcast(this, 2607, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
         return pendingIntent;
     }
 

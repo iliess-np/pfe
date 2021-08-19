@@ -39,9 +39,9 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/poppinsbold"
-                android:textSize="30sp"
                 android:gravity="center"
                 android:text="@string/login"
+                android:textSize="30sp"
                 app:layout_constraintBottom_toTopOf="@id/textInputLayoutPhone"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -166,41 +166,45 @@
 
         </LinearLayout>
     </ScrollView>
+
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:fab_labelsPosition="left"
-        app:layout_anchorGravity="bottom|right|end"
-        android:layout_marginBottom="60dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginEnd="10dp"
-        app:fab_labelStyle="@style/LabelStyle"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_gravity="end|bottom">
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="60dp"
+        app:fab_labelStyle="@style/LabelStyle"
+        app:fab_labelsPosition="left"
+        app:layout_anchorGravity="bottom|right|end">
+
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/contact"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_colorNormal="#FF018786"
-            app:fab_title="Developed by Houari ilies"
+            app:fab_icon="@drawable/ic_user"
             app:fab_size="mini"
-            app:fab_icon="@drawable/ic_user"/>
+            app:fab_title="Developed by Houari ilies" />
+
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_colorNormal="#FF018786"
-            app:fab_title="iliessnp@gmail.com"
+            app:fab_icon="@drawable/ic_mail"
             app:fab_size="mini"
-            app:fab_icon="@drawable/ic_mail"/>
+            app:fab_title="iliessnp@gmail.com" />
+
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:fab_colorNormal="#FF018786"
-            app:fab_title="+213 7 93 29 96 94"
+            app:fab_icon="@drawable/ic_phone"
             app:fab_size="mini"
-            app:fab_icon="@drawable/ic_phone"/>
+            app:fab_title="+213 7 93 29 96 94" />
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
 </RelativeLayout>

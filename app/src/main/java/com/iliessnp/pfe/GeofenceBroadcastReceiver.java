@@ -3,14 +3,10 @@ package com.iliessnp.pfe;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
-
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {

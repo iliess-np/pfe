@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -38,28 +37,15 @@ public class HelpMe extends AppCompatActivity {
             phone = intent.getExtras().getString("phone");
             myLocation = intent.getExtras().getString("myLocation");
         }
-        btnShowHome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra("id", senderId);
-                startActivity(intent);
-            }
+        btnShowHome.setOnClickListener(v -> {
+            Intent intent1 = new Intent(getApplicationContext(), MainActivity.class);
+            intent1.putExtra("id", senderId);
+            startActivity(intent1);
         });
 
 
-        btnSMS.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                senSMS();
-            }
-        });
-        btnCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                makePhoneCall();
-            }
-        });
+        btnSMS.setOnClickListener(v -> senSMS());
+        btnCall.setOnClickListener(v -> makePhoneCall());
     }
 
     private void senSMS() {
@@ -84,17 +70,30 @@ public class HelpMe extends AppCompatActivity {
 
 
     private void makePhoneCall() {
-        if (phone.trim().length() > 0) {
-
+        if (phone.trim().length() == 10) {
             if (ContextCompat.checkSelfPermission(HelpMe.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(HelpMe.this, new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL);
             } else {
                 String dial = "tel:" + phone;
                 startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(dial)));
             }
-
         } else {
             Toast.makeText(HelpMe.this, "Enter Phone Number", Toast.LENGTH_SHORT).show();
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+                try {
+                    String  phoneNum = phone;
+                    String dial = "tel:" + phoneNum;
+                    startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(dial)));
+                    Toast.makeText(HelpMe.this, "Phone call Successfully", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(HelpMe.this, "Phone call Failed, Please try again", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                requestPermissions(new String[]{Manifest.permission.SEND_SMS}, 1);
+            }
         }
     }
 

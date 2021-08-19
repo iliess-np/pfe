@@ -70,8 +70,12 @@
     <string name="location_updates">Location Updates</string>
     <string name="gps_savepower">GPS/SavePower</string>
     <string name="home_page">Home Page</string>
-    <string name="tv_result">tv result</string>
+    <string name="tv_result">Transition Type</string>
     <string name="sw_gps_singWifi">Using Tower + WIFI(PRIORITY_BALANCED_POWER_ACCURACY)</string>
     <string name="sw_gps_singGPS">Using GPS(PRIORITY_HIGH_ACCURACY)</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="call_emergency">Call Emergency</string>
+    <string name="panic_help_me">Panic Help Me</string>
+    <string name="emptyText">______</string>
 
 </resources>

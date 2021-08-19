@@ -21,7 +21,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -29,16 +28,11 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -46,18 +40,15 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -100,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     LocationManager locationManager;
     SensorManager sensorManager;
     Sensor accelerometer;
-    TextView x, y, z, sum, jump, fall, tv_result;
+    TextView sum, jump, fall, tv_result;//,x, y, z,;
     float xx, yy, zz, summ;
     int falll, jumpp;
     ArrayList<Float> xData = new ArrayList<>();
@@ -171,123 +162,91 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnGen = findViewById(R.id.btn_generate);
         ivOutput = findViewById(R.id.iv_output);
         //accelerometer
-        x = findViewById(R.id.x);
-        y = findViewById(R.id.y);
-        z = findViewById(R.id.z);
         sum = findViewById(R.id.sum);
         jump = findViewById(R.id.jump);
         fall = findViewById(R.id.fall);
         tv_result = findViewById(R.id.tv_result);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        sw_gps.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (sw_gps.isChecked()) {
-                    //most accurate position
-                    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-                    tv_sensor.setText(R.string.sw_gps_singGPS);
-                } else {
-                    locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-                    tv_sensor.setText(R.string.sw_gps_singWifi);
-                }
+        sw_gps.setOnClickListener(v -> {
+            if (sw_gps.isChecked()) {
+                //most accurate position
+                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                tv_sensor.setText(R.string.sw_gps_singGPS);
+            } else {
+                locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+                tv_sensor.setText(R.string.sw_gps_singWifi);
             }
         });
 
-        sw_locationsUpdates.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (sw_locationsUpdates.isChecked()) {
-                    startLocationsUpdates();
-                } else {
-                    stopLocationsUpdates();
-                }
+        sw_locationsUpdates.setOnClickListener(v -> {
+            if (sw_locationsUpdates.isChecked()) {
+                startLocationsUpdates();
+            } else {
+                stopLocationsUpdates();
             }
         });
 
-        btnFetch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnFetch.setOnClickListener(view -> {
 
-                if (senderId.equals("")) {
-                    Toast.makeText(MainActivity.this, "Please Enter Detail", Toast.LENGTH_SHORT).show();
-                } else {
-                    GetMatchData();
-                }
-            }
-        });
-
-        btnGen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            if (senderId.equals("")) {
+                Toast.makeText(MainActivity.this, "Please Login again", Toast.LENGTH_SHORT).show();
+            } else {
                 GetMatchData();
-                try {
-                    alertTypes = "QR_code_scanned";
-                    sendAlertQR(alertTypes);
-                } catch (UnsupportedEncodingException e) {
-                    Log.e(TAG, "catch sendAlertQR btnGen");
-
-                    e.printStackTrace();
-                }
-                String sText = f_name + "\n" + l_name + "\n" + phone;
-
-                MultiFormatWriter writer = new MultiFormatWriter();
-                try {
-                    BitMatrix matrix = writer.encode(sText, BarcodeFormat.QR_CODE, 350, 350);
-                    BarcodeEncoder encoder = new BarcodeEncoder();
-                    Bitmap bitmap = encoder.createBitmap(matrix);
-                    ivOutput.setImageBitmap(bitmap);
-                } catch (WriterException e) {
-                    Log.e(TAG, "catch QR btnGen");
-                    e.printStackTrace();
-                }
             }
         });
 
-        btnSendData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    send();
-                } catch (UnsupportedEncodingException e) {
-                    Log.e(TAG, "catch send btnSendData");
-                    e.printStackTrace();
-                }
+        btnGen.setOnClickListener(v -> {
+            GetMatchData();
+            try {
+                alertTypes = "QR_code_scanned";
+                sendAlertQR(alertTypes);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            String sText = f_name + "\n" + l_name + "\n" + phone;
+
+            MultiFormatWriter writer = new MultiFormatWriter();
+            try {
+                BitMatrix matrix = writer.encode(sText, BarcodeFormat.QR_CODE, 350, 350);
+                BarcodeEncoder encoder = new BarcodeEncoder();
+                Bitmap bitmap = encoder.createBitmap(matrix);
+                ivOutput.setImageBitmap(bitmap);
+            } catch (WriterException e) {
+                e.printStackTrace();
             }
         });
 
-        btnShowMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showMap();
+        btnSendData.setOnClickListener(v -> {
+            try {
+                send();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
         });
 
-        btnPanic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    alertTypes = "user_in_Panic";
-                    sendAlertQR(alertTypes);
-                } catch (UnsupportedEncodingException e) {
-                    Log.e(TAG, "catch sendAlertQR btnPanic");
-                    e.printStackTrace();
-                }
-                if (myLocation == null) {
-                    updateGPS();
-                }
-                Intent intent = new Intent(getApplicationContext(), HelpMe.class);
-                intent.putExtra("id", senderId);
-                intent.putExtra("phone", phone);
-                intent.putExtra("myLocation", myLocation);
-                startActivity(intent);
+        btnShowMap.setOnClickListener(v -> showMap());
+
+        btnPanic.setOnClickListener(v -> {
+            try {
+                alertTypes = "user_in_Panic";
+                sendAlertQR(alertTypes);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
+            if (myLocation == null) {
+                updateGPS();
+            }
+            Intent intent1 = new Intent(getApplicationContext(), HelpMe.class);
+            intent1.putExtra("id", senderId);
+            intent1.putExtra("phone", phone);
+            intent1.putExtra("myLocation", myLocation);
+            startActivity(intent1);
         });
 
         try {
-            Thread.sleep(4 * 1000);
+            Thread.sleep(2 * 1000);
         } catch (InterruptedException ie) {
-            Log.e(TAG, "catch Thread sleep");
             Thread.currentThread().interrupt();
         }
 
@@ -310,8 +269,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 super.onLocationResult(locationResult);
                 Location location = locationResult.getLastLocation();
                 if (location != null) {
-                    //TODO:  check it
-                    //Fixed
                     updateUIValues(location);
                 }
             }
@@ -321,16 +278,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         t.schedule(new TimerTask() {
             @Override
             public void run() {
-                //TODO: check it
-                //Fixed
                 updateGPS();
                 if (!myLocation.equals(myLocationPrv)) {
                     try {
-                        //TODO:  check it
-                        //Fixed
                         send();
                     } catch (UnsupportedEncodingException e) {
-                        Log.e(TAG, "catch send Timer");
                         e.printStackTrace();
                     }
                     myLocationPrv = myLocation;
@@ -353,11 +305,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                     tv_result.setText(str);
                     try {
-                        //TODO:  check it
-                        //Fixed
                         sendAlertQR(str);
                     } catch (UnsupportedEncodingException e) {
-                        Log.e(TAG, "catch sendAlertQR Timer");
                         e.printStackTrace();
                     }
                     TransitionTypePrv = TransitionTypeInitial;
@@ -383,39 +332,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mProgressDialog.setProgress(0);
         mProgressDialog.setProgressNumberFormat(null);
         mProgressDialog.setProgressPercentFormat(null);
-        //change added
-        mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mProgressDialog.dismiss();
-            }
-        });
+        mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", (dialog, which) -> mProgressDialog.dismiss());
         mProgressDialog.show();
         mProgressDialog.setProgress(25);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, Config5.MATCHDATA_URL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        mProgressDialog.setProgress(43);
-                        mProgressDialog.setProgress(86);
-                        showJSON(response);
-                        mProgressDialog.setProgress(100);
-                        mProgressDialog.dismiss();
-                    }
+                response -> {
+                    mProgressDialog.setProgress(43);
+                    mProgressDialog.setProgress(86);
+                    showJSON(response);
+                    mProgressDialog.setProgress(100);
+                    mProgressDialog.dismiss();
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        //i think this one is where its shows when going back to home screen
-                        Toast.makeText(MainActivity.this, "error onErrorResponse GetMatchData " + error, Toast.LENGTH_LONG).show();
-                        Log.e(TAG,"error onErrorResponse GetMatchData "+error);
-                        mProgressDialog.dismiss();
-                    }
+                error -> {
+                    Toast.makeText(MainActivity.this, "error onErrorResponse " + error, Toast.LENGTH_LONG).show();
+                    mProgressDialog.dismiss();
                 }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> map = new HashMap<String, String>();
+            protected Map<String, String> getParams() {
+                Map<String, String> map = new HashMap<>();
                 map.put(KEY_SENDERID, senderId);
                 return map;
             }
@@ -427,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void showJSON(String response) {
-        ArrayList<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
+        ArrayList<HashMap<String, String>> list = new ArrayList<>();
         try {
             JSONObject jsonObject = new JSONObject(response);
             JSONArray result = jsonObject.getJSONArray(Config5.JSON_ARRAY);
@@ -493,8 +428,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             updateGPS();
         } else {
-            //TODO: its crash here
-            Toast.makeText(this, "pleas grant Permission to the APP so it can function", Toast.LENGTH_SHORT).show();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_FINE_LOCATION);
+            }
+            Toast.makeText(this, "please grant Permission to the APP", Toast.LENGTH_SHORT).show();
             finish();
         }
 //        }
@@ -509,20 +446,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
             fusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null) {
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
 //                                lat = location.getLatitude();
 //                                lon = location.getLongitude();
 //                                accuracy = String.valueOf(location.getAccuracy());
 //                                double latRound = Math.round(lat * 10000.0) / 10000.0;
 //                                double lonRound = Math.round(lon * 10000.0) / 10000.0;
 //                                myLocation = latRound + "," + lonRound;
-                                updateUIValues(location);
-                            } else {
-                                startLocationsUpdates();
-                            }
+                            updateUIValues(location);
+                        } else {
+                            startLocationsUpdates();
                         }
                     });
         } else {
@@ -544,18 +478,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double lonRound = Math.round(lon * 10000.0) / 10000.0;
         myLocation = latRound + "," + lonRound;
 
-        tv_lat.setText(String.valueOf(lat));
-        tv_lon.setText(String.valueOf(lon));
-        tv_accuracy.setText(String.valueOf(accuracy));
+        tv_lat.setText(String.valueOf(latRound));
+        tv_lon.setText(String.valueOf(lonRound));
+        double accuracyValue = Math.round(location.getAccuracy() * 100.0) / 100.0;
+        tv_accuracy.setText(String.valueOf(accuracyValue));
 
         if (location.hasAltitude()) {
-            tv_altitude.setText(String.valueOf(location.getAltitude()));
+            double altitudeValue = Math.round(location.getAltitude() * 100.0) / 100.0;
+            tv_altitude.setText(String.valueOf(altitudeValue));
         } else {
             tv_altitude.setText(R.string.not_Available);
         }
 
         if (location.hasSpeed()) {
-            tv_speed.setText(String.valueOf(location.getSpeed()));
+            double speedValue = Math.round(location.getSpeed() * 100.0) / 100.0;
+            tv_speed.setText(String.valueOf(speedValue));
         } else {
             tv_speed.setText(R.string.not_Available);
         }
@@ -566,7 +503,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
             tv_address.setText(addresses.get(0).getAddressLine(0));
         } catch (Exception e) {
-            Log.e(TAG, "catch addresses updateUIValues");
             tv_address.setText(R.string.addresses);
         }
     }
@@ -642,25 +578,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             jumpp = +1;
             jump.setText(String.valueOf(jumpp));
         } else if (summ > 35 && timeNow > timePrv + 20000) {
-            Toast.makeText(this, "you Fallen \nsumm is=> " + summ, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "\ntime now: " + timeNow + "\ntime prev: " + timePrv + "\nsumm: " + summ);
             falll = +1;
             fall.setText(String.valueOf(falll));
             alertTypes = "patient_has_fallen";
             try {
                 sendAlertQR(alertTypes);
             } catch (UnsupportedEncodingException e) {
-                Log.e(TAG, "catch sendAlertQR onSensorChanged");
                 e.printStackTrace();
             }
             acceleration.add(summ);
             timePrv = timeNow;
         }
 
-        x.setText(String.valueOf(xx));
-        y.setText(String.valueOf(yy));
-        z.setText(String.valueOf(zz));
-        sum.setText(String.valueOf(summ));
+//        x.setText(String.valueOf(xx));
+//        y.setText(String.valueOf(yy));
+//        z.setText(String.valueOf(zz));
+        double accelerationSum = Math.round(summ * 100.0) / 100.0;
+        sum.setText(String.valueOf(accelerationSum));
     }
 
     @Override
@@ -707,7 +641,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 JSONObject json = new JSONObject(progress[0]);
                 String message = json.getString("msg");
 
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
             } catch (Exception ignored) {
             }
         }

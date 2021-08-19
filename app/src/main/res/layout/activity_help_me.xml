@@ -25,8 +25,8 @@
 
     <Button
         android:id="@+id/btn_sms"
-        android:layout_width="133dp"
-        android:layout_height="150dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="150dp"
         android:background="@drawable/btn_round_red"
@@ -36,15 +36,16 @@
         android:padding="10dp"
         android:paddingEnd="10dp"
         android:paddingRight="10dp"
-        android:text="Send SMS"
-        android:textSize="30sp"
+        android:stateListAnimator="@animator/button_state_list_animator"
+        android:text="@string/send_sms"
         android:textColor="#FFFFFF"
+        android:textSize="30sp"
         tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry" />
 
     <Button
         android:id="@+id/btn_call"
-        android:layout_width="133dp"
-        android:layout_height="150dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:background="@drawable/btn_round_red"
@@ -54,11 +55,11 @@
         android:padding="10dp"
         android:paddingEnd="10dp"
         android:paddingRight="10dp"
-        android:text="Call Emergancy"
-        android:textSize="30sp"
+        android:stateListAnimator="@animator/button_state_list_animator"
+        android:text="@string/call_emergency"
         android:textColor="#FFFFFF"
+        android:textSize="30sp"
         tools:ignore="ButtonStyle,RtlHardcoded,RtlSymmetry" />
-
 
 
 </LinearLayout>
